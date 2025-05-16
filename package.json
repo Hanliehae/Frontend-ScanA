@@ -17,6 +17,8 @@
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "@reduxjs/toolkit": "^2.7.0",
+    "@tensorflow/tfjs": "^4.17.0",
+    "@tensorflow/tfjs-react-native": "^0.8.0",
     "axios": "^1.9.0",
     "expo": "~53.0.6",
     "expo-camera": "~16.1.6",
