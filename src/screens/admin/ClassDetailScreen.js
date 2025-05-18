@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, ScrollView, RefreshControl } from 'react-native';
-import { Card, Title, Paragraph, Button, Text, FAB, ActivityIndicator, Divider, Portal, Modal, TextInput, Checkbox } from 'react-native-paper';
+import { Card, Title, Paragraph, Button, Text, FAB, ActivityIndicator, Divider, Portal, Modal, TextInput, Checkbox, IconButton } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { showMessage } from 'react-native-flash-message';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { Swipeable } from 'react-native-gesture-handler';
 import api from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
@@ -227,14 +228,85 @@ const StudentsTab = ({ classData, course }) => {
     }
   };
 
+  const handleRemoveStudent = async (studentId) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      await api.post(
+        `/class-students/remove`,
+        { 
+          class_id: classData.id,
+          student_ids: [studentId] 
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      showMessage({
+        message: 'Success',
+        description: 'Mahasiswa berhasil dihapus dari kelas',
+        type: 'success',
+      });
+
+      fetchStudents();
+    } catch (err) {
+      showMessage({
+        message: 'Error',
+        description: err.message || 'Gagal menghapus mahasiswa dari kelas',
+        type: 'danger',
+      });
+    }
+  };
+
+  const renderRightActions = (studentId) => {
+    return (
+      <View style={styles.deleteAction}>
+        <View style={styles.deleteButton}>
+          <IconButton
+            icon="delete"
+            size={28}
+            color="white"
+            onPress={() => handleRemoveStudent(studentId)}
+          />
+          <Paragraph style={styles.deleteText}>Hapus</Paragraph>
+        </View>
+      </View>
+    );
+  };
+
   const renderStudentItem = ({ item }) => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <Title>{item.name}</Title>
-        <Paragraph>NIM: {item.nim}</Paragraph>
-        <Paragraph>Email: {item.email}</Paragraph>
-      </Card.Content>
-    </Card>
+    <Swipeable
+      renderRightActions={() => renderRightActions(item.id)}
+      friction={2}
+      rightThreshold={40}
+    >
+      <Card style={styles.card}>
+        <Card.Content style={styles.cardContent}>
+          <View style={styles.studentCardContent}>
+            <View style={styles.studentInfo}>
+              <View style={styles.nameContainer}>
+                <Title style={styles.studentName}>{item.name}</Title>
+                <View style={styles.nimContainer}>
+                  <Paragraph style={styles.nimLabel}>NIM</Paragraph>
+                  <Paragraph style={styles.nimValue}>{item.nim}</Paragraph>
+                </View>
+              </View>
+              <View style={styles.emailContainer}>
+                <IconButton
+                  icon="email"
+                  size={16}
+                  color="#666"
+                  style={styles.emailIcon}
+                />
+                <Paragraph style={styles.emailText}>{item.email}</Paragraph>
+              </View>
+            </View>
+          </View>
+        </Card.Content>
+      </Card>
+    </Swipeable>
   );
 
   if (loading) {
@@ -377,7 +449,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    marginBottom: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    elevation: 2,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+  },
+  cardContent: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   card_meeting: {
     marginBottom: 16,
@@ -420,6 +500,82 @@ const styles = StyleSheet.create({
   },
   addButton: {
     marginBottom: 16,
+  },
+  studentCardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  studentInfo: {
+    flex: 1,
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  studentName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    flex: 1,
+  },
+  nimContainer: {
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  nimLabel: {
+    fontSize: 10,
+    color: '#1976D2',
+    fontWeight: 'bold',
+    margin: 0,
+    padding: 0,
+  },
+  nimValue: {
+    fontSize: 12,
+    color: '#1976D2',
+    fontWeight: '500',
+    margin: 0,
+    padding: 0,
+  },
+  emailContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emailIcon: {
+    margin: 0,
+    marginRight: 4,
+  },
+  emailText: {
+    fontSize: 14,
+    color: '#666',
+    margin: 0,
+    padding: 0,
+  },
+  deleteAction: {
+    backgroundColor: '#ff4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+    height: '100%',
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  deleteButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteText: {
+    color: 'white',
+    fontSize: 12,
+    marginTop: -8,
+    fontWeight: '500',
+    margin: 0,
+    padding: 0,
   },
 });
 
