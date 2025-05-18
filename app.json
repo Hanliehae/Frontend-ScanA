@@ -32,14 +32,17 @@
       "package": "com.anonymous.kehadiranapp"
     },
     "web": {
+      "bundler": "metro",
+      "output": "static",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-router",
       [
         "expo-camera",
         {
-          "cameraPermission": "Aplikasi membutuhkan akses kamera untuk memindai telapak tangan.",
-          "microphonePermission": "Aplikasi membutuhkan akses mikrofon untuk memindai telapak tangan.",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
       ],
@@ -49,6 +52,9 @@
           "photosPermission": "Aplikasi membutuhkan akses ke galeri untuk memindai telapak tangan."
         }
       ]
-    ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

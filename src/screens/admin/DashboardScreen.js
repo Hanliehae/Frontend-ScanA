@@ -55,10 +55,10 @@ const DashboardScreen = () => {
       const attendanceRate = totalMeetings > 0 ? (totalAttendance / (totalStudents * totalMeetings)) * 100 : 0;
 
       // Get active meetings and present students for today
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toLocaleDateString('en-CA');
       const todayMeetingsData = meetingsResponse.data.data?.meetings?.filter(meeting => 
         meeting.date === today
-        ) || [];
+      ) || [];
 
       setTodayMeetings(todayMeetingsData);
       console.log(todayMeetingsData);
@@ -187,7 +187,7 @@ const DashboardScreen = () => {
                       </Paragraph>
                     )}
                     <Paragraph style={styles.meetingDetail}>
-                      Kehadiran: {meeting.presentCount || 0}/{meeting.totalStudents || 0}
+                      Kehadiran: {typeof meeting.presentCount === 'number' ? meeting.presentCount : '-'} / {typeof meeting.totalStudents === 'number' ? meeting.totalStudents : '-'}
                     </Paragraph>
                     <Paragraph style={styles.meetingDetail}>
                       Status: {status}
@@ -207,7 +207,8 @@ const DashboardScreen = () => {
                     <Button
                       mode="contained"
                       icon="login"
-                      onPress={() => navigation.navigate('HandScan', { meeting, type: 'masuk' })}
+                      // params course id
+                      onPress={() => navigation.navigate('HandScan', { courseId: meeting.course.id })}
                       style={[styles.scanButton, styles.scanInButton]}
                       disabled={!canScanIn}
                     >
@@ -216,7 +217,7 @@ const DashboardScreen = () => {
                     <Button
                       mode="contained"
                       icon="logout"
-                      onPress={() => navigation.navigate('HandScan', { meeting, type: 'keluar' })}
+                      onPress={() => navigation.navigate('HandScan', { courseId: meeting.course.id })}
                       style={[styles.scanButton, styles.scanOutButton]}
                       disabled={!canScanOut}
                     >

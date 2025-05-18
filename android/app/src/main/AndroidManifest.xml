@@ -27,6 +27,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="exp+kehadiran-app"/>
+        <data android:scheme="exp+scan-a"/>
       </intent-filter>
     </activity>
   </application>

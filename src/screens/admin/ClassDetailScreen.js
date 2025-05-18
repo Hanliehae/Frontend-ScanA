@@ -337,18 +337,24 @@ const ClassDetailScreen = () => {
         </Card.Content>
       </Card>
 
-      <Tab.Navigator>
-        <Tab.Screen 
-          name="Meetings" 
-          children={() => <MeetingsTab classData={classData} course={course} />}
-          options={{ title: 'Pertemuan' }}
-        />
-        <Tab.Screen 
-          name="Students" 
-          children={() => <StudentsTab classData={classData} course={course} />}
-          options={{ title: 'Mahasiswa' }}
-        />
-      </Tab.Navigator>
+      <Tab.Navigator
+  screenOptions={{
+    tabBarLabelStyle: { color: '#222', fontWeight: 'bold', fontSize: 16 },
+    tabBarStyle: { backgroundColor: '#fff', elevation: 2 },
+    tabBarIndicatorStyle: { backgroundColor: '#1976D2', height: 3 },
+  }}
+>
+  <Tab.Screen 
+    name="Meetings" 
+    children={() => <MeetingsTab classData={classData} course={course} />}
+    options={{ title: 'Pertemuan' }}
+  />
+  <Tab.Screen 
+    name="Students" 
+    children={() => <StudentsTab classData={classData} course={course} />}
+    options={{ title: 'Mahasiswa' }}
+  />
+</Tab.Navigator>
     </View>
   );
 };

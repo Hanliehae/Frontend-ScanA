@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Card, Title, Paragraph, Button, Text, ActivityIndicator, Portal, Modal, TextInput, Chip, Menu, Divider, List } from 'react-native-paper';
+import { Button, Text, ActivityIndicator, Portal, Modal, Chip, Menu, Divider, List } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { showMessage } from 'react-native-flash-message';
 import api from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AttendanceTable from '../../components/AttendanceTable';
 
 const HistoryScreen = () => {
   const navigation = useNavigation();
@@ -149,6 +150,7 @@ const HistoryScreen = () => {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>Memuat data kehadiran...</Text>
       </View>
     );
   }
@@ -211,27 +213,15 @@ const HistoryScreen = () => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        style={styles.tableContainer}
       >
-        {filteredHistory.map((record) => (
-          <Card key={record.id} style={styles.card}>
-            <Card.Content>
-              <Title>{record.course.name}</Title>
-              <Paragraph>Kelas {record.class.name}</Paragraph>
-              <Paragraph>Mahasiswa: {record.student.nim} - {record.student.name}</Paragraph>
-              <Paragraph>Tanggal: {record.meeting.date}</Paragraph>
-              <Paragraph>Waktu: {record.meeting.start_time} - {record.meeting.end_time}</Paragraph>
-              <Paragraph>Status: {record.status}</Paragraph>
-              {record.check_in_time && (
-                <Paragraph>Check In: {record.check_in_time}</Paragraph>
-              )}
-              {record.check_out_time && (
-                <Paragraph>Check Out: {record.check_out_time}</Paragraph>
-              )}
-              <Paragraph>Semester: {record.course.semester}</Paragraph>
-              <Paragraph>Tahun Akademik: {record.course.academic_year}</Paragraph>
-            </Card.Content>
-          </Card>
-        ))}
+        {filteredHistory.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Tidak ada data kehadiran</Text>
+          </View>
+        ) : (
+          <AttendanceTable data={filteredHistory} />
+        )}
       </ScrollView>
 
       <Portal>
@@ -248,11 +238,13 @@ const HistoryScreen = () => {
               visible={showSemesterMenu}
               onDismiss={() => setShowSemesterMenu(false)}
               anchor={
-                <List.Item
-                  title={filters.semester || 'Pilih Semester'}
+                <Button
+                  mode="outlined"
                   onPress={() => setShowSemesterMenu(true)}
-                  right={props => <List.Icon {...props} icon="chevron-down" />}
-                />
+                  style={styles.menuButton}
+                >
+                  {filters.semester || 'Pilih Semester'}
+                </Button>
               }
             >
               {availableFilters.semesters.map((semester) => (
@@ -269,11 +261,13 @@ const HistoryScreen = () => {
               visible={showYearMenu}
               onDismiss={() => setShowYearMenu(false)}
               anchor={
-                <List.Item
-                  title={filters.academicYear || 'Pilih Tahun'}
+                <Button
+                  mode="outlined"
                   onPress={() => setShowYearMenu(true)}
-                  right={props => <List.Icon {...props} icon="chevron-down" />}
-                />
+                  style={styles.menuButton}
+                >
+                  {filters.academicYear || 'Pilih Tahun'}
+                </Button>
               }
             >
               {availableFilters.academicYears.map((year) => (
@@ -290,11 +284,13 @@ const HistoryScreen = () => {
               visible={showCourseMenu}
               onDismiss={() => setShowCourseMenu(false)}
               anchor={
-                <List.Item
-                  title={filters.course || 'Pilih MK'}
+                <Button
+                  mode="outlined"
                   onPress={() => setShowCourseMenu(true)}
-                  right={props => <List.Icon {...props} icon="chevron-down" />}
-                />
+                  style={styles.menuButton}
+                >
+                  {filters.course || 'Pilih Mata Kuliah'}
+                </Button>
               }
             >
               {availableFilters.courses.map((course) => (
@@ -311,11 +307,13 @@ const HistoryScreen = () => {
               visible={showClassMenu}
               onDismiss={() => setShowClassMenu(false)}
               anchor={
-                <List.Item
-                  title={filters.class || 'Pilih Kelas'}
+                <Button
+                  mode="outlined"
                   onPress={() => setShowClassMenu(true)}
-                  right={props => <List.Icon {...props} icon="chevron-down" />}
-                />
+                  style={styles.menuButton}
+                >
+                  {filters.class || 'Pilih Kelas'}
+                </Button>
               }
             >
               {availableFilters.classes.map((class_) => (
@@ -332,11 +330,13 @@ const HistoryScreen = () => {
               visible={showStudentMenu}
               onDismiss={() => setShowStudentMenu(false)}
               anchor={
-                <List.Item
-                  title={filters.student || 'Pilih Mahasiswa'}
+                <Button
+                  mode="outlined"
                   onPress={() => setShowStudentMenu(true)}
-                  right={props => <List.Icon {...props} icon="chevron-down" />}
-                />
+                  style={styles.menuButton}
+                >
+                  {filters.student ? filters.student.split(' - ')[0] : 'Pilih Mahasiswa'}
+                </Button>
               }
             >
               {availableFilters.students.map((student) => (
@@ -348,23 +348,14 @@ const HistoryScreen = () => {
               ))}
             </Menu>
           </List.Section>
-          
-          <View style={styles.modalActions}>
-            <Button
-              mode="outlined"
-              onPress={clearFilters}
-              style={styles.modalButton}
-            >
-              Hapus Filter
-            </Button>
-            <Button
-              mode="contained"
-              onPress={() => setShowFilterModal(false)}
-              style={styles.modalButton}
-            >
-              Terapkan
-            </Button>
-          </View>
+
+          <Button
+            mode="contained"
+            onPress={clearFilters}
+            style={styles.clearButton}
+          >
+            Hapus Semua Filter
+          </Button>
         </Modal>
       </Portal>
     </View>
@@ -380,40 +371,55 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 16,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
   filterContainer: {
     padding: 16,
     backgroundColor: 'white',
+    elevation: 2,
   },
   filterButton: {
     marginBottom: 8,
   },
   chip: {
     marginRight: 8,
+    marginBottom: 8,
   },
-  card: {
-    margin: 8,
-    marginHorizontal: 16,
+  tableContainer: {
+    flex: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
   modalContainer: {
     backgroundColor: 'white',
     padding: 20,
     margin: 20,
     borderRadius: 8,
-    maxHeight: '80%',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 16,
   },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 16,
+  menuButton: {
+    marginBottom: 8,
   },
-  modalButton: {
-    marginLeft: 8,
+  clearButton: {
+    marginTop: 16,
   },
 });
 
