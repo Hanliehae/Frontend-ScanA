@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, ScrollView, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, ScrollView, RefreshControl, Alert } from 'react-native';
 import { Card, Title, Paragraph, Button, Text, FAB, ActivityIndicator, Divider, Portal, Modal, TextInput, Checkbox, IconButton } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { showMessage } from 'react-native-flash-message';
@@ -128,6 +128,8 @@ const StudentsTab = ({ classData, course }) => {
   const [visible, setVisible] = useState(false);
   const [allStudents, setAllStudents] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -229,6 +231,11 @@ const StudentsTab = ({ classData, course }) => {
   };
 
   const handleRemoveStudent = async (studentId) => {
+    setSelectedStudent(students.find(s => s.id === studentId));
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDeleteStudent = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
@@ -239,7 +246,7 @@ const StudentsTab = ({ classData, course }) => {
         `/class-students/remove`,
         { 
           class_id: classData.id,
-          student_ids: [studentId] 
+          student_ids: [selectedStudent.id]
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -250,6 +257,8 @@ const StudentsTab = ({ classData, course }) => {
         type: 'success',
       });
 
+      setDeleteModalVisible(false);
+      setSelectedStudent(null);
       fetchStudents();
     } catch (err) {
       showMessage({
@@ -374,6 +383,51 @@ const StudentsTab = ({ classData, course }) => {
             Tambah
           </Button>
         </Modal>
+
+        <Modal
+          visible={deleteModalVisible}
+          onDismiss={() => {
+            setDeleteModalVisible(false);
+            setSelectedStudent(null);
+          }}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <View style={styles.modalContent}>
+            <IconButton
+              icon="alert-circle"
+              size={40}
+              color="#ff4444"
+              style={styles.warningIcon}
+            />
+            <Title style={styles.modalTitle}>Hapus Mahasiswa</Title>
+            <Paragraph style={styles.modalText}>
+              Apakah Anda yakin ingin menghapus {selectedStudent?.name} dari kelas {classData.name}?
+            </Paragraph>
+            <Paragraph style={styles.warningText}>
+              Tindakan ini tidak dapat dibatalkan.
+            </Paragraph>
+            <View style={styles.modalActions}>
+              <Button
+                mode="outlined"
+                onPress={() => {
+                  setDeleteModalVisible(false);
+                  setSelectedStudent(null);
+                }}
+                style={styles.modalButton}
+              >
+                Batal
+              </Button>
+              <Button
+                mode="contained"
+                onPress={confirmDeleteStudent}
+                style={[styles.modalButton, styles.deleteButton]}
+                buttonColor="#ff4444"
+              >
+                Hapus
+              </Button>
+            </View>
+          </View>
+        </Modal>
       </Portal>
     </View>
   );
@@ -383,8 +437,38 @@ const Tab = createMaterialTopTabNavigator();
 
 const ClassDetailScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { class: classData, course } = route.params;
   const [loading, setLoading] = useState(true);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  const handleDeleteClass = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      await api.delete(`/classes/${classData.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      showMessage({
+        message: 'Success',
+        description: 'Kelas berhasil dihapus',
+        type: 'success',
+      });
+
+      setDeleteModalVisible(false);
+      navigation.goBack();
+    } catch (err) {
+      showMessage({
+        message: 'Error',
+        description: err.message || 'Gagal menghapus kelas',
+        type: 'danger',
+      });
+    }
+  };
 
   useEffect(() => {
     if (classData && course) {
@@ -404,29 +488,80 @@ const ClassDetailScreen = () => {
     <View style={styles.container}>
       <Card style={styles.headerCard}>
         <Card.Content>
-          <Title>{course.name}</Title>
-          <Paragraph>Kelas {classData.name}</Paragraph>
+          <View style={styles.headerContent}>
+            <View style={styles.headerInfo}>
+              <Title>{course.name}</Title>
+              <Paragraph>Kelas {classData.name}</Paragraph>
+            </View>
+            <IconButton
+              icon="delete"
+              size={24}
+              color="#ff4444"
+              onPress={() => setDeleteModalVisible(true)}
+            />
+          </View>
         </Card.Content>
       </Card>
 
       <Tab.Navigator
-  screenOptions={{
-    tabBarLabelStyle: { color: '#222', fontWeight: 'bold', fontSize: 16 },
-    tabBarStyle: { backgroundColor: '#fff', elevation: 2 },
-    tabBarIndicatorStyle: { backgroundColor: '#1976D2', height: 3 },
-  }}
->
-  <Tab.Screen 
-    name="Meetings" 
-    children={() => <MeetingsTab classData={classData} course={course} />}
-    options={{ title: 'Pertemuan' }}
-  />
-  <Tab.Screen 
-    name="Students" 
-    children={() => <StudentsTab classData={classData} course={course} />}
-    options={{ title: 'Mahasiswa' }}
-  />
-</Tab.Navigator>
+        screenOptions={{
+          tabBarLabelStyle: { color: '#222', fontWeight: 'bold', fontSize: 16 },
+          tabBarStyle: { backgroundColor: '#fff', elevation: 2 },
+          tabBarIndicatorStyle: { backgroundColor: '#1976D2', height: 3 },
+        }}
+      >
+        <Tab.Screen 
+          name="Meetings" 
+          children={() => <MeetingsTab classData={classData} course={course} />}
+          options={{ title: 'Pertemuan' }}
+        />
+        <Tab.Screen 
+          name="Students" 
+          children={() => <StudentsTab classData={classData} course={course} />}
+          options={{ title: 'Mahasiswa' }}
+        />
+      </Tab.Navigator>
+
+      <Portal>
+        <Modal
+          visible={deleteModalVisible}
+          onDismiss={() => setDeleteModalVisible(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <View style={styles.modalContent}>
+            <IconButton
+              icon="alert-circle"
+              size={40}
+              color="#ff4444"
+              style={styles.warningIcon}
+            />
+            <Title style={styles.modalTitle}>Hapus Kelas</Title>
+            <Paragraph style={styles.modalText}>
+              Apakah Anda yakin ingin menghapus kelas {classData.name} dari mata kuliah {course.name}?
+            </Paragraph>
+            <Paragraph style={styles.warningText}>
+              Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait kelas ini.
+            </Paragraph>
+            <View style={styles.modalActions}>
+              <Button
+                mode="outlined"
+                onPress={() => setDeleteModalVisible(false)}
+                style={styles.modalButton}
+              >
+                Batal
+              </Button>
+              <Button
+                mode="contained"
+                onPress={handleDeleteClass}
+                style={[styles.modalButton, styles.deleteButton]}
+                buttonColor="#ff4444"
+              >
+                Hapus
+              </Button>
+            </View>
+          </View>
+        </Modal>
+      </Portal>
     </View>
   );
 };
@@ -477,29 +612,50 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     margin: 20,
-    borderRadius: 8,
+    borderRadius: 12,
+  },
+  modalContent: {
+    alignItems: 'center',
+  },
+  warningIcon: {
+    marginBottom: 16,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  input: {
-    marginBottom: 16,
+  modalText: {
+    textAlign: 'center',
+    marginBottom: 8,
+    fontSize: 16,
+  },
+  warningText: {
+    textAlign: 'center',
+    color: '#ff4444',
+    marginBottom: 24,
+    fontSize: 14,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
   },
   modalButton: {
-    marginTop: 16,
+    marginHorizontal: 8,
+    minWidth: 100,
   },
-  checkboxItem: {
+  deleteButton: {
+    borderColor: '#ff4444',
+  },
+  headerContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  actionContainer: {
-    padding: 16,
-  },
-  addButton: {
-    marginBottom: 16,
+  headerInfo: {
+    flex: 1,
   },
   studentCardContent: {
     flexDirection: 'row',
@@ -564,10 +720,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderTopRightRadius: 12,
     borderBottomRightRadius: 12,
-  },
-  deleteButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   deleteText: {
     color: 'white',
