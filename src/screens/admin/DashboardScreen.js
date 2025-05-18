@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Card, Title, Paragraph, Button, ActivityIndicator, useTheme } from 'react-native-paper';
+import { Card, Title, Paragraph, Button, ActivityIndicator, useTheme, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { showMessage } from 'react-native-flash-message';
 import api from '../../services/api';
@@ -22,6 +22,16 @@ const DashboardScreen = () => {
     activeMeetings: 0,
     presentStudents: 0
   });
+
+  // Menghitung semester dan tahun ajaran yang sedang berjalan
+  const getCurrentSemester = () => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+    const semester = currentMonth >= 7 && currentMonth <= 12 ? 'Ganjil' : 'Genap';
+    const academicYear = currentMonth >= 7 ? `${currentYear}/${currentYear + 1}` : `${currentYear - 1}/${currentYear}`;
+    return { semester, academicYear };
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -117,6 +127,11 @@ const DashboardScreen = () => {
         <Card.Content>
           <Title>Selamat Datang, Admin!</Title>
           <Paragraph>Anda dapat mengelola kehadiran mahasiswa melalui aplikasi ini.</Paragraph>
+          <View style={styles.semesterInfo}>
+            <Text style={styles.semesterText}>
+              Semester Ganjil Tahun Ajaran 2024/2025
+            </Text>
+          </View>
         </Card.Content>
       </Card>
 
@@ -372,6 +387,18 @@ const styles = StyleSheet.create({
   },
   scanOutButton: {
     backgroundColor: '#F44336', // Warna merah untuk scan keluar
+  },
+  semesterInfo: {
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: '#E3F2FD',
+    borderRadius: 4,
+  },
+  semesterText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1976D2',
+    textAlign: 'center',
   },
 });
 
