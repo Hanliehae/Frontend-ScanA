@@ -1,13 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, ScrollView, RefreshControl, Alert } from 'react-native';
-import { Card, Title, Paragraph, Button, Text, FAB, ActivityIndicator, Divider, Portal, Modal, TextInput, Checkbox, IconButton } from 'react-native-paper';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { showMessage } from 'react-native-flash-message';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Swipeable } from 'react-native-gesture-handler';
-import api from '../../services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useIsFocused } from '@react-navigation/native';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  ScrollView,
+  RefreshControl,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
+import {
+  Card,
+  Title,
+  Paragraph,
+  Button,
+  Text,
+  FAB,
+  ActivityIndicator,
+  Divider,
+  Portal,
+  Modal,
+  TextInput,
+  Checkbox,
+  IconButton,
+} from "react-native-paper";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { showMessage } from "react-native-flash-message";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { Swipeable } from "react-native-gesture-handler";
+import api from "../../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 
 // Tab Screens
 const MeetingsTab = ({ classData, course }) => {
@@ -25,20 +47,20 @@ const MeetingsTab = ({ classData, course }) => {
   const fetchMeetings = async () => {
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        throw new Error('No token found');
+        throw new Error("No token found");
       }
 
       const response = await api.get(`/meetings/by-class/${classData.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setMeetings(response.data.meetings || []);
     } catch (err) {
       showMessage({
-        message: 'Error',
-        description: err.message || 'Failed to load meetings',
-        type: 'danger',
+        message: "Error",
+        description: err.message || "Failed to load meetings",
+        type: "danger",
       });
     } finally {
       setLoading(false);
@@ -52,11 +74,11 @@ const MeetingsTab = ({ classData, course }) => {
   };
 
   const handleMeetingPress = (meeting, index) => {
-    navigation.navigate('MeetingDetail', {
+    navigation.navigate("MeetingDetail", {
       meeting,
       class: classData,
       course,
-      meetingIndex: index
+      meetingIndex: index,
     });
   };
 
@@ -64,32 +86,33 @@ const MeetingsTab = ({ classData, course }) => {
     const now = new Date();
     const startDateTime = new Date(`${item.date}T${item.start_time}`);
     const endDateTime = new Date(`${item.date}T${item.end_time}`);
-  
-    let status = '';
+
+    let status = "";
     if (now < startDateTime) {
-      status = 'Belum dimulai';
+      status = "Belum dimulai";
     } else if (now >= startDateTime && now <= endDateTime) {
-      status = 'Sedang berlangsung';
+      status = "Sedang berlangsung";
     } else {
-      status = 'Sudah selesai';
+      status = "Sudah selesai";
     }
-  
+
     return (
-      <Card 
-        key={item.id} 
+      <Card
+        key={item.id}
         style={styles.card_meeting}
         onPress={() => handleMeetingPress(item, index)}
       >
         <Card.Content>
           <Title>Pertemuan {index + 1}</Title>
           <Paragraph>Tanggal: {item.date}</Paragraph>
-          <Paragraph>Waktu: {item.start_time} - {item.end_time}</Paragraph>
+          <Paragraph>
+            Waktu: {item.start_time} - {item.end_time}
+          </Paragraph>
           <Paragraph>Status: {status}</Paragraph>
         </Card.Content>
       </Card>
     );
   };
-
 
   if (loading) {
     return (
@@ -114,7 +137,9 @@ const MeetingsTab = ({ classData, course }) => {
       <FAB
         style={styles.fab}
         icon="plus"
-        onPress={() => navigation.navigate('CreateMeeting', { class_: classData, course })}
+        onPress={() =>
+          navigation.navigate("CreateMeeting", { class_: classData, course })
+        }
         label="Tambah Pertemuan"
       />
     </View>
@@ -147,22 +172,25 @@ const StudentsTab = ({ classData, course }) => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        throw new Error('No token found');
+        throw new Error("No token found");
       }
 
-      const response = await api.get(`/class-students/by-class/${classData.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(
+        `/class-students/by-class/${classData.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setStudents(response.data.students || []);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch students');
+      setError("Failed to fetch students");
       showMessage({
-        message: 'Error',
-        description: err.message || 'Failed to load students',
-        type: 'danger',
+        message: "Error",
+        description: err.message || "Failed to load students",
+        type: "danger",
       });
     } finally {
       setLoading(false);
@@ -171,51 +199,51 @@ const StudentsTab = ({ classData, course }) => {
 
   const fetchAllStudents = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        throw new Error('No token found');
+        throw new Error("No token found");
       }
 
-      const response = await api.get('/user', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.get("/user", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       // Filter out students who are already in the class
-      const registeredStudentIds = students.map(student => student.id);
+      const registeredStudentIds = students.map((student) => student.id);
       const availableStudents = (response.data.users || []).filter(
-        student => !registeredStudentIds.includes(student.id)
+        (student) => !registeredStudentIds.includes(student.id)
       );
-      
+
       setAllStudents(availableStudents);
     } catch (err) {
       showMessage({
-        message: 'Error',
-        description: err.message || 'Failed to load all students',
-        type: 'danger',
+        message: "Error",
+        description: err.message || "Failed to load all students",
+        type: "danger",
       });
     }
   };
 
   const handleAddStudents = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        throw new Error('No token found');
+        throw new Error("No token found");
       }
 
       await api.post(
         `/class-students/add`,
-        { 
+        {
           class_id: classData.id,
-          student_ids: selectedStudents 
+          student_ids: selectedStudents,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       showMessage({
-        message: 'Success',
-        description: 'Mahasiswa berhasil ditambahkan',
-        type: 'success',
+        message: "Success",
+        description: "Mahasiswa berhasil ditambahkan",
+        type: "success",
       });
 
       setVisible(false);
@@ -223,38 +251,38 @@ const StudentsTab = ({ classData, course }) => {
       fetchStudents();
     } catch (err) {
       showMessage({
-        message: 'Error',
-        description: err.message || 'Gagal menambahkan mahasiswa',
-        type: 'danger',
+        message: "Error",
+        description: err.message || "Gagal menambahkan mahasiswa",
+        type: "danger",
       });
     }
   };
 
   const handleRemoveStudent = async (studentId) => {
-    setSelectedStudent(students.find(s => s.id === studentId));
+    setSelectedStudent(students.find((s) => s.id === studentId));
     setDeleteModalVisible(true);
   };
 
   const confirmDeleteStudent = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        throw new Error('No token found');
+        throw new Error("No token found");
       }
 
       await api.post(
         `/class-students/remove`,
-        { 
+        {
           class_id: classData.id,
-          student_ids: [selectedStudent.id]
+          student_ids: [selectedStudent.id],
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       showMessage({
-        message: 'Success',
-        description: 'Mahasiswa berhasil dihapus dari kelas',
-        type: 'success',
+        message: "Success",
+        description: "Mahasiswa berhasil dihapus dari kelas",
+        type: "success",
       });
 
       setDeleteModalVisible(false);
@@ -262,9 +290,9 @@ const StudentsTab = ({ classData, course }) => {
       fetchStudents();
     } catch (err) {
       showMessage({
-        message: 'Error',
-        description: err.message || 'Gagal menghapus mahasiswa dari kelas',
-        type: 'danger',
+        message: "Error",
+        description: err.message || "Gagal menghapus mahasiswa dari kelas",
+        type: "danger",
       });
     }
   };
@@ -365,21 +393,31 @@ const StudentsTab = ({ classData, course }) => {
             renderItem={({ item }) => (
               <View style={styles.checkboxItem}>
                 <Checkbox
-                  status={selectedStudents.includes(item.id) ? 'checked' : 'unchecked'}
+                  status={
+                    selectedStudents.includes(item.id) ? "checked" : "unchecked"
+                  }
                   onPress={() => {
                     if (selectedStudents.includes(item.id)) {
-                      setSelectedStudents(selectedStudents.filter(id => id !== item.id));
+                      setSelectedStudents(
+                        selectedStudents.filter((id) => id !== item.id)
+                      );
                     } else {
                       setSelectedStudents([...selectedStudents, item.id]);
                     }
                   }}
                 />
-                <Text>{item.name} ({item.nim})</Text>
+                <Text>
+                  {item.name} ({item.nim})
+                </Text>
               </View>
             )}
             keyExtractor={(item) => item.id.toString()}
           />
-          <Button mode="contained" onPress={handleAddStudents} style={styles.modalButton}>
+          <Button
+            mode="contained"
+            onPress={handleAddStudents}
+            style={styles.modalButton}
+          >
             Tambah
           </Button>
         </Modal>
@@ -401,7 +439,8 @@ const StudentsTab = ({ classData, course }) => {
             />
             <Title style={styles.modalTitle}>Hapus Mahasiswa</Title>
             <Paragraph style={styles.modalText}>
-              Apakah Anda yakin ingin menghapus {selectedStudent?.name} dari kelas {classData.name}?
+              Apakah Anda yakin ingin menghapus {selectedStudent?.name} dari
+              kelas {classData.name}?
             </Paragraph>
             <Paragraph style={styles.warningText}>
               Tindakan ini tidak dapat dibatalkan.
@@ -444,28 +483,28 @@ const ClassDetailScreen = () => {
 
   const handleDeleteClass = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        throw new Error('No token found');
+        throw new Error("No token found");
       }
 
       await api.delete(`/classes/${classData.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       showMessage({
-        message: 'Success',
-        description: 'Kelas berhasil dihapus',
-        type: 'success',
+        message: "Success",
+        description: "Kelas berhasil dihapus",
+        type: "success",
       });
 
       setDeleteModalVisible(false);
       navigation.goBack();
     } catch (err) {
       showMessage({
-        message: 'Error',
-        description: err.message || 'Gagal menghapus kelas',
-        type: 'danger',
+        message: "Error",
+        description: err.message || "Gagal menghapus kelas",
+        type: "danger",
       });
     }
   };
@@ -505,20 +544,29 @@ const ClassDetailScreen = () => {
 
       <Tab.Navigator
         screenOptions={{
-          tabBarLabelStyle: { color: '#222', fontWeight: 'bold', fontSize: 16 },
-          tabBarStyle: { backgroundColor: '#fff', elevation: 2 },
-          tabBarIndicatorStyle: { backgroundColor: '#1976D2', height: 3 },
+          tabBarStyle: {
+            backgroundColor: '#fff',
+          },
+          tabBarIndicatorStyle: {
+            backgroundColor: '#1976D2',
+          },
+          tabBarActiveTintColor: '#1976D2',
+          tabBarInactiveTintColor: '#666',
         }}
       >
-        <Tab.Screen 
-          name="Meetings" 
+        <Tab.Screen
+          name="Meetings"
           children={() => <MeetingsTab classData={classData} course={course} />}
-          options={{ title: 'Pertemuan' }}
+          options={{ 
+            tabBarLabel: "Pertemuan"
+          }}
         />
-        <Tab.Screen 
-          name="Students" 
+        <Tab.Screen
+          name="Students"
           children={() => <StudentsTab classData={classData} course={course} />}
-          options={{ title: 'Mahasiswa' }}
+          options={{ 
+            tabBarLabel: "Mahasiswa"
+          }}
         />
       </Tab.Navigator>
 
@@ -537,10 +585,12 @@ const ClassDetailScreen = () => {
             />
             <Title style={styles.modalTitle}>Hapus Kelas</Title>
             <Paragraph style={styles.modalText}>
-              Apakah Anda yakin ingin menghapus kelas {classData.name} dari mata kuliah {course.name}?
+              Apakah Anda yakin ingin menghapus kelas {classData.name} dari mata
+              kuliah {course.name}?
             </Paragraph>
             <Paragraph style={styles.warningText}>
-              Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait kelas ini.
+              Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data
+              terkait kelas ini.
             </Paragraph>
             <View style={styles.modalActions}>
               <Button
@@ -576,8 +626,8 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
   list: {
@@ -588,7 +638,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     elevation: 2,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   cardContent: {
     paddingVertical: 12,
@@ -598,87 +648,98 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     margin: 16,
     right: 0,
     bottom: 0,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     margin: 20,
     borderRadius: 12,
   },
   modalContent: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   warningIcon: {
     marginBottom: 16,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
     fontSize: 16,
   },
   warningText: {
-    textAlign: 'center',
-    color: '#ff4444',
+    textAlign: "center",
+    color: "#ff4444",
     marginBottom: 24,
     fontSize: 14,
   },
   modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
   },
   modalButton: {
     marginHorizontal: 8,
     minWidth: 100,
   },
   deleteButton: {
-    borderColor: '#ff4444',
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
+  deleteText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 0,
+    margin: 0,
+    padding: 0,
   },
   headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   headerInfo: {
     flex: 1,
   },
   studentCardContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   studentInfo: {
     flex: 1,
   },
   nameContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   studentName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
+    fontWeight: "bold",
+    color: "#1a1a1a",
     flex: 1,
   },
   nimContainer: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: "#e3f2fd",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -686,21 +747,21 @@ const styles = StyleSheet.create({
   },
   nimLabel: {
     fontSize: 10,
-    color: '#1976D2',
-    fontWeight: 'bold',
+    color: "#1976D2",
+    fontWeight: "bold",
     margin: 0,
     padding: 0,
   },
   nimValue: {
     fontSize: 12,
-    color: '#1976D2',
-    fontWeight: '500',
+    color: "#1976D2",
+    fontWeight: "500",
     margin: 0,
     padding: 0,
   },
   emailContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   emailIcon: {
     margin: 0,
@@ -708,27 +769,43 @@ const styles = StyleSheet.create({
   },
   emailText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     margin: 0,
     padding: 0,
   },
   deleteAction: {
-    backgroundColor: '#ff4444',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#ff4444",
+    justifyContent: "center",
+    alignItems: "center",
     width: 100,
-    height: '100%',
+    flex: 1,
     borderTopRightRadius: 12,
     borderBottomRightRadius: 12,
   },
-  deleteText: {
-    color: 'white',
-    fontSize: 12,
-    marginTop: -8,
-    fontWeight: '500',
-    margin: 0,
-    padding: 0,
+  // tab screen label color
+  tabBarLabelStyle: {
+    color: "#1976D2",
+    fontWeight: "bold",
+    fontSize: 14,
+    textTransform: "none",
   },
+  tabBarStyle: {
+    backgroundColor: "#fff",
+    elevation: 2,
+    height: 48,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  tabBarIndicatorStyle: {
+    backgroundColor: "#1976D2",
+    height: 3,
+  },
+  tabBarActiveTintColor: "#1976D2",
+  tabBarInactiveTintColor: "#666",
+  tabBarPressColor: "#e3f2fd",
+  tabBarPressOpacity: 0.8,
+  tabBarShowLabel: true,
+  tabBarShowIcon: false,
 });
 
-export default ClassDetailScreen; 
+export default ClassDetailScreen;

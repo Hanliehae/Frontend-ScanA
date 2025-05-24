@@ -1,10 +1,10 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_URL from './config';
 
 // Ganti dengan IP address komputer Anda yang menjalankan backend
 // Untuk development, gunakan IP address komputer Anda di jaringan lokal
 // Contoh: 'http://192.168.1.100:8000/api'
-const API_URL = 'http://192.168.1.6:8000/api';
 
 // Buat instance axios dengan timeout
 const api = axios.create({

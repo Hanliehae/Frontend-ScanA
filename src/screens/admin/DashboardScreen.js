@@ -202,9 +202,6 @@ const DashboardScreen = () => {
                       </Paragraph>
                     )}
                     <Paragraph style={styles.meetingDetail}>
-                      Kehadiran: {typeof meeting.presentCount === 'number' ? meeting.presentCount : '-'} / {typeof meeting.totalStudents === 'number' ? meeting.totalStudents : '-'}
-                    </Paragraph>
-                    <Paragraph style={styles.meetingDetail}>
                       Status: {status}
                     </Paragraph>
                     {!canScanIn && canScanOut && (

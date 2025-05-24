@@ -4,6 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
+import API_URL from '../../services/config';
 
 const HandScanScreen = () => {
   const [permission, requestPermission] = useCameraPermissions();
@@ -62,7 +63,7 @@ const HandScanScreen = () => {
 
       console.log('Sending request to backend...');
       // Send to backend
-      const response = await axios.post('http://192.168.1.3:8000/api/scan-hand', formData, {
+      const response = await axios.post(`${API_URL}/scan-hand`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
