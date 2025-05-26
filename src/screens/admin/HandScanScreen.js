@@ -42,7 +42,7 @@ const HandScanScreen = () => {
 
       // Take picture
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.7,
+        quality: 1,
         base64: true,
         skipProcessing: true,
       });
@@ -85,10 +85,13 @@ const HandScanScreen = () => {
         setError(response.data.message);
       }
     } catch (err) {
-      console.error('Scan error:', err);
       setError(err.response?.data?.message || 'Gagal memproses scan tangan');
     } finally {
-      setIsScanning(false);
+      setTimeout(() => {
+        setIsScanning(false);
+        setError(null);
+        setScanResult(null);
+      }, 5000);
     }
   };
 
@@ -129,12 +132,6 @@ const HandScanScreen = () => {
             {isScanning ? 'Memindai...' : 'Posisikan tangan dalam area'}
           </Text>
         </View>
-        
-        {isScanning && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#fff" />
-          </View>
-        )}
 
         {error && (
           <View style={styles.errorContainer}>
@@ -145,7 +142,7 @@ const HandScanScreen = () => {
         {scanResult && (
           <View style={styles.resultContainer}>
             <Text style={styles.resultText}>
-              {scanResult.message || 'Scan berhasil!'}
+              {scanResult.message}
             </Text>
           </View>
         )}
@@ -237,7 +234,15 @@ const styles = StyleSheet.create({
   resultText: {
     color: '#fff',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  resultSubText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 14,
+    fontStyle: 'italic',
   },
   captureButton: {
     position: 'absolute',
