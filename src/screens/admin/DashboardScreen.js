@@ -71,7 +71,6 @@ const DashboardScreen = () => {
       ) || [];
 
       setTodayMeetings(todayMeetingsData);
-      console.log(todayMeetingsData);
 
 
       const presentStudents = attendanceResponse.data.data?.history?.filter(record => 
@@ -219,8 +218,10 @@ const DashboardScreen = () => {
                     <Button
                       mode="contained"
                       icon="login"
-                      // params course id
-                      onPress={() => navigation.navigate('HandScan', { courseId: meeting.course.id })}
+                      onPress={() => navigation.navigate('HandScan', { 
+                        courseId: meeting.course.id,
+                        scanType: 'in'
+                      })}
                       style={[styles.scanButton, styles.scanInButton]}
                       disabled={!canScanIn}
                     >
@@ -229,7 +230,10 @@ const DashboardScreen = () => {
                     <Button
                       mode="contained"
                       icon="logout"
-                      onPress={() => navigation.navigate('HandScan', { courseId: meeting.course.id })}
+                      onPress={() => navigation.navigate('HandScan', { 
+                        courseId: meeting.course.id,
+                        scanType: 'out'
+                      })}
                       style={[styles.scanButton, styles.scanOutButton]}
                       disabled={!canScanOut}
                     >

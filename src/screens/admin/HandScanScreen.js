@@ -17,7 +17,10 @@ const HandScanScreen = () => {
 
   // Get course_id from route params
   const courseId = route.params?.courseId;
+  const scanType = route.params?.scanType;
+  console.log('Scan type:', scanType);
 
+  
   const isPermissionGranted = Boolean(permission?.granted);
 
   useEffect(() => {
@@ -60,6 +63,8 @@ const HandScanScreen = () => {
         name: 'scan.jpg',
       });
       formData.append('course_id', courseId);
+      formData.append('scan_type', scanType);
+
 
       console.log('Sending request to backend...');
       // Send to backend
@@ -204,11 +209,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    transform: [{ translateX: -20 }, { translateY: -20 }],
+    transform: [{ translateX: -50 }, { translateY: -50 }],
   },
   errorContainer: {
     position: 'absolute',
-    bottom: 50,
+    top: 50,
     left: 20,
     right: 20,
     backgroundColor: 'rgba(255,0,0,0.7)',
@@ -222,7 +227,7 @@ const styles = StyleSheet.create({
   },
   resultContainer: {
     position: 'absolute',
-    bottom: 50,
+    top: 50,
     left: 20,
     right: 20,
     backgroundColor: 'rgba(0,255,0,0.7)',

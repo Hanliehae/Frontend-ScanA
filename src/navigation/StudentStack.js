@@ -9,7 +9,6 @@ import { logout } from '../store/slices/authSlice';
 import DashboardScreen from '../screens/student/DashboardScreen';
 import CoursesScreen from '../screens/student/CoursesScreen';
 import AttendanceHistoryScreen from '../screens/student/AttendanceHistoryScreen';
-import ScanScreen from '../screens/ScanScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
