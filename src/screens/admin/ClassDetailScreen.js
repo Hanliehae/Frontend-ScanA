@@ -22,6 +22,7 @@ import {
   TextInput,
   Checkbox,
   IconButton,
+  ProgressBar
 } from "react-native-paper";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { showMessage } from "react-native-flash-message";
@@ -313,38 +314,51 @@ const StudentsTab = ({ classData, course }) => {
     );
   };
 
-  const renderStudentItem = ({ item }) => (
-    <Swipeable
-      renderRightActions={() => renderRightActions(item.id)}
-      friction={2}
-      rightThreshold={40}
-    >
-      <Card style={styles.card}>
-        <Card.Content style={styles.cardContent}>
-          <View style={styles.studentCardContent}>
-            <View style={styles.studentInfo}>
-              <View style={styles.nameContainer}>
-                <Title style={styles.studentName}>{item.name}</Title>
-                <View style={styles.nimContainer}>
-                  <Paragraph style={styles.nimLabel}>NIM</Paragraph>
-                  <Paragraph style={styles.nimValue}>{item.nim}</Paragraph>
+  const renderStudentItem = ({ item }) => {
+    return (
+      <Swipeable
+        renderRightActions={() => renderRightActions(item.id)}
+        friction={2}
+        rightThreshold={40}
+      >
+        <Card style={styles.card}>
+          <Card.Content style={styles.cardContent}>
+            <View style={styles.studentCardContent}>
+              <View style={styles.studentInfo}>
+                <View style={styles.nameContainer}>
+                  <Title style={styles.studentName}>{item.name}</Title>
+                  <View style={styles.nimContainer}>
+                    <Paragraph style={styles.nimLabel}>NIM</Paragraph>
+                    <Paragraph style={styles.nimValue}>{item.nim}</Paragraph>
+                  </View>
+                </View>
+                <View style={styles.emailContainer}>
+                  <IconButton
+                    icon="email"
+                    size={16}
+                    color="#666"
+                    style={styles.emailIcon}
+                  />
+                  <Paragraph style={styles.emailText}>{item.email}</Paragraph>
+                </View>
+                {/* Tambahan informasi kehadiran */}
+                <View style={styles.attendanceContainer}>
+                  <ProgressBar 
+                    progress={item.attendance_percentage / 100} 
+                    color="#4CAF50"
+                    style={styles.progressBar}
+                  />
+                  <Text style={styles.attendanceText}>
+                    {item.attendance_count}/{item.total_meetings} pertemuan ({item.attendance_percentage}%)
+                  </Text>
                 </View>
               </View>
-              <View style={styles.emailContainer}>
-                <IconButton
-                  icon="email"
-                  size={16}
-                  color="#666"
-                  style={styles.emailIcon}
-                />
-                <Paragraph style={styles.emailText}>{item.email}</Paragraph>
-              </View>
             </View>
-          </View>
-        </Card.Content>
-      </Card>
-    </Swipeable>
-  );
+          </Card.Content>
+        </Card>
+      </Swipeable>
+    );
+  };
 
   if (loading) {
     return (
@@ -806,6 +820,18 @@ const styles = StyleSheet.create({
   tabBarPressOpacity: 0.8,
   tabBarShowLabel: true,
   tabBarShowIcon: false,
+  attendanceContainer: {
+    marginTop: 8,
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  attendanceText: {
+    fontSize: 12,
+    color: '#666',
+  },
 });
 
 export default ClassDetailScreen;

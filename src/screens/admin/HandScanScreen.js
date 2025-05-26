@@ -87,8 +87,8 @@ const HandScanScreen = () => {
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal memproses scan tangan');
     } finally {
+      setIsScanning(false);
       setTimeout(() => {
-        setIsScanning(false);
         setError(null);
         setScanResult(null);
       }, 5000);
