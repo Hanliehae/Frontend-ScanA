@@ -87,7 +87,7 @@ const MeetingsTab = ({ classData, course }) => {
     const now = new Date();
     const startDateTime = new Date(`${item.date}T${item.start_time}`);
     const endDateTime = new Date(`${item.date}T${item.end_time}`);
-
+  
     let status = "";
     if (now < startDateTime) {
       status = "Belum dimulai";
@@ -96,7 +96,7 @@ const MeetingsTab = ({ classData, course }) => {
     } else {
       status = "Sudah selesai";
     }
-
+  
     return (
       <Card
         key={item.id}
@@ -110,6 +110,23 @@ const MeetingsTab = ({ classData, course }) => {
             Waktu: {item.start_time} - {item.end_time}
           </Paragraph>
           <Paragraph>Status: {status}</Paragraph>
+          
+          {/* Tambahan informasi kehadiran */}
+          {now > startDateTime && (
+            <View style={styles.meetingAttendanceContainer}>
+              <ProgressBar 
+                progress={item.attendance_count / item.total_students} 
+                color="#4CAF50"
+                style={styles.meetingProgressBar}
+              />
+              <Text style={styles.meetingAttendanceText}>
+                Kehadiran: {item.attendance_count}/{item.total_students} mahasiswa
+                {item.total_students > 0 && (
+                  <Text> ({item.attendance_percentage}%)</Text>
+                )}
+              </Text>
+            </View>
+          )}
         </Card.Content>
       </Card>
     );
@@ -829,6 +846,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   attendanceText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  meetingAttendanceContainer: {
+    marginTop: 8,
+  },
+  meetingProgressBar: {
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 4,
+  },
+  meetingAttendanceText: {
     fontSize: 12,
     color: '#666',
   },
