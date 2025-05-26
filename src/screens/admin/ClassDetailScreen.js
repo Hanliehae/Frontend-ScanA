@@ -114,11 +114,11 @@ const MeetingsTab = ({ classData, course }) => {
           {/* Tambahan informasi kehadiran */}
           {now > startDateTime && (
             <View style={styles.meetingAttendanceContainer}>
-              <ProgressBar 
+              {/* <ProgressBar 
                 progress={item.attendance_count / item.total_students} 
                 color="#4CAF50"
                 style={styles.meetingProgressBar}
-              />
+              /> */}
               <Text style={styles.meetingAttendanceText}>
                 Kehadiran: {item.attendance_count}/{item.total_students} mahasiswa
                 {item.total_students > 0 && (

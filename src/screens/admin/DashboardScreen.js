@@ -219,7 +219,7 @@ const DashboardScreen = () => {
                       mode="contained"
                       icon="login"
                       onPress={() => navigation.navigate('HandScan', { 
-                        courseId: meeting.course.id,
+                        meetingId: meeting.id,
                         scanType: 'in'
                       })}
                       style={[styles.scanButton, styles.scanInButton]}
@@ -231,7 +231,7 @@ const DashboardScreen = () => {
                       mode="contained"
                       icon="logout"
                       onPress={() => navigation.navigate('HandScan', { 
-                        courseId: meeting.course.id,
+                        meetingId: meeting.id,
                         scanType: 'out'
                       })}
                       style={[styles.scanButton, styles.scanOutButton]}

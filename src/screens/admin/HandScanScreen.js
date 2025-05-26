@@ -16,7 +16,7 @@ const HandScanScreen = () => {
   const cameraRef = useRef(null);
 
   // Get course_id from route params
-  const courseId = route.params?.courseId;
+  const meetingId = route.params?.meetingId;
   const scanType = route.params?.scanType;
   console.log('Scan type:', scanType);
 
@@ -62,7 +62,7 @@ const HandScanScreen = () => {
         type: 'image/jpeg',
         name: 'scan.jpg',
       });
-      formData.append('course_id', courseId);
+      formData.append('meeting_id', meetingId);
       formData.append('scan_type', scanType);
 
 
@@ -95,10 +95,10 @@ const HandScanScreen = () => {
     }
   };
 
-  if (!courseId) {
+  if (!meetingId) {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>Course ID tidak ditemukan</Text>
+        <Text style={styles.text}>Meeting ID tidak ditemukan</Text>
       </View>
     );
   }
