@@ -47,8 +47,15 @@ const HandScanScreen = () => {
         quality: 1,
         base64: true,
         skipProcessing: true,
+        exif: false,
+        aspect: [1, 1],
+        width: CAMERA_SIZE,
+        height: CAMERA_SIZE,
       });
       console.log('Photo captured');
+
+      console.log('Photo ratio:', photo.width / photo.height);
+      console.log('Photo size:', photo.width, 'x', photo.height);
 
       // Create temporary file
       const tempFilePath = `${FileSystem.cacheDirectory}temp_scan.jpg`;
@@ -127,6 +134,7 @@ const HandScanScreen = () => {
           facing='back'
           enableTorch={false}
           enableZoomGesture={false}
+          ratio="1:1"
         />
         <View style={styles.overlay}>
           <View style={styles.scanArea}>
