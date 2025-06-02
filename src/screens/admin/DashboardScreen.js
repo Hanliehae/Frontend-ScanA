@@ -128,7 +128,7 @@ const DashboardScreen = () => {
           <Paragraph>Anda dapat mengelola kehadiran mahasiswa melalui aplikasi ini.</Paragraph>
           <View style={styles.semesterInfo}>
             <Text style={styles.semesterText}>
-              Semester Ganjil Tahun Ajaran 2024/2025
+              Semester {getCurrentSemester().semester} Tahun Ajaran {getCurrentSemester().academicYear}
             </Text>
           </View>
         </Card.Content>
