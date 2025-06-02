@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import API_URL from '../../services/config';
+
+const { width: screenWidth } = Dimensions.get('window');
+const CAMERA_SIZE = screenWidth - 40; // 20px padding on each side
 
 const HandScanScreen = () => {
   const [permission, requestPermission] = useCameraPermissions();
@@ -20,7 +23,6 @@ const HandScanScreen = () => {
   const scanType = route.params?.scanType;
   console.log('Scan type:', scanType);
 
-  
   const isPermissionGranted = Boolean(permission?.granted);
 
   useEffect(() => {
@@ -64,7 +66,6 @@ const HandScanScreen = () => {
       });
       formData.append('meeting_id', meetingId);
       formData.append('scan_type', scanType);
-
 
       console.log('Sending request to backend...');
       // Send to backend
@@ -118,42 +119,44 @@ const HandScanScreen = () => {
   }
 
   return (
-    <SafeAreaView style={StyleSheet.absoluteFillObject}>
-      <CameraView 
-        ref={cameraRef}
-        style={StyleSheet.absoluteFillObject} 
-        facing='back'
-        enableTorch={false}
-        enableZoomGesture={false}
-      />
-      <View style={styles.overlay}>
-        <View style={styles.scanArea}>
-          <Text style={styles.scanText}>
-            {isScanning ? 'Memindai...' : 'Posisikan tangan dalam area'}
-          </Text>
-        </View>
-
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
-        {scanResult && (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultText}>
-              {scanResult.message}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.cameraContainer}>
+        <CameraView 
+          ref={cameraRef}
+          style={styles.camera} 
+          facing='back'
+          enableTorch={false}
+          enableZoomGesture={false}
+        />
+        <View style={styles.overlay}>
+          <View style={styles.scanArea}>
+            <Text style={styles.scanText}>
+              {isScanning ? 'Memindai...' : 'Posisikan tangan dalam area'}
             </Text>
           </View>
-        )}
 
-        <TouchableOpacity 
-          style={[styles.captureButton, isScanning && styles.captureButtonDisabled]}
-          onPress={handleCapture}
-          disabled={isScanning}
-        >
-          <View style={styles.captureButtonInner} />
-        </TouchableOpacity>
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {scanResult && (
+            <View style={styles.resultContainer}>
+              <Text style={styles.resultText}>
+                {scanResult.message}
+              </Text>
+            </View>
+          )}
+
+          <TouchableOpacity 
+            style={[styles.captureButton, isScanning && styles.captureButtonDisabled]}
+            onPress={handleCapture}
+            disabled={isScanning}
+          >
+            <View style={styles.captureButtonInner} />
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -162,9 +165,18 @@ const HandScanScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
+  },
+  cameraContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#000',
+  },
+  camera: {
+    width: CAMERA_SIZE,
+    height: CAMERA_SIZE,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   text: {
     color: '#fff',
@@ -181,18 +193,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'transparent',
     padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scanArea: {
-    flex: 1,
+    width: CAMERA_SIZE,
+    height: CAMERA_SIZE,
     borderWidth: 2,
     borderColor: '#fff',
     borderRadius: 20,
-    margin: 30,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   scanText: {
     color: '#fff',
@@ -201,6 +216,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
     padding: 10,
     borderRadius: 5,
+    position: 'absolute',
+    top: -50,
+    left: '50%',
+    transform: [{ translateX: '-50%' }],
   },
   loadingContainer: {
     position: 'absolute',

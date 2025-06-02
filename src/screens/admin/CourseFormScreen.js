@@ -126,7 +126,7 @@ const CourseFormScreen = () => {
         onChangeText={(text) => setFormData({ ...formData, academic_year: text })}
         error={!!errors.academic_year}
         style={styles.input}
-        placeholder="Contoh: 2023/2024"
+        placeholder="Contoh: 2024"
       />
       <HelperText type="error" visible={!!errors.academic_year}>
         {errors.academic_year}
