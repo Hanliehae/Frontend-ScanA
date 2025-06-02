@@ -1,65 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { Card, Title, Paragraph, Button, Text, SegmentedButtons, TextInput } from 'react-native-paper';
+import api from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CoursesScreen = () => {
   const [semester, setSemester] = useState('ganjil');
   const [academicYear, setAcademicYear] = useState(new Date().getFullYear().toString());
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [profile, setProfile] = useState({});
 
-  const enrolledCourses = [
-    {
-      id: 1,
-      code: 'CS101',
-      name: 'Pemrograman Dasar',
-      credits: 3,
-      lecturer: 'Dr. John Doe',
-      class: 'A',
-      schedule: 'Senin, 08:00 - 10:00',
-      room: 'Lab. Komputer 1',
-      attendance: 80,
-    },
-    {
-      id: 2,
-      code: 'CS102',
-      name: 'Struktur Data',
-      credits: 3,
-      lecturer: 'Dr. Jane Smith',
-      class: 'B',
-      schedule: 'Selasa, 10:00 - 12:00',
-      room: 'Lab. Komputer 2',
-      attendance: 90,
-    },
-  ];
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+      
+      const profile = await api.get('/user/profile', { headers: { Authorization: `Bearer ${token}` } });
+      const student_id = profile.data.id;
+      setProfile(profile.data);
+      const response = await api.get(`/courses/detail/by-student/${student_id}`, { 
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          semester: semester,
+          academic_year: academicYear
+        }
+      });
 
-  const renderCourseItem = ({ item }) => (
-    <Card style={styles.card}>
-      <Card.Content>
-        <Title>{item.name}</Title>
-        <Paragraph>Kode: {item.code}</Paragraph>
-        <Paragraph>SKS: {item.credits}</Paragraph>
-        <Paragraph>Dosen: {item.lecturer}</Paragraph>
-        <Paragraph>Kelas: {item.class}</Paragraph>
-        <Paragraph>Jadwal: {item.schedule}</Paragraph>
-        <Paragraph>Ruangan: {item.room}</Paragraph>
-        <View style={styles.attendanceContainer}>
-          <Text>Kehadiran: {item.attendance}%</Text>
-          <View style={styles.progressBar}>
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${item.attendance}%` },
-              ]}
-            />
+      if (response.data.courses) {
+        setCourses(response.data.courses);
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch courses');
+      console.error('Error fetching courses:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, [semester, academicYear]);
+
+  const renderCourseItem = ({ item }) => {
+    const attendanceRate = Math.round(item.attendance_rate);
+    return (
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>{item.name}</Title>
+          <Paragraph>Kode: {item.course_id}</Paragraph>
+          <Paragraph>Kelas: {item.class}</Paragraph>
+          <View style={styles.attendanceContainer}>
+            <Text>Kehadiran: {item.attendance}/{item.total_meetings} ({attendanceRate}%)</Text>
+            <View style={styles.progressBar}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${attendanceRate}%` },
+                ]}
+              />
+            </View>
           </View>
-        </View>
-      </Card.Content>
-      <Card.Actions>
-        <Button mode="contained" onPress={() => {}}>
-          Detail
-        </Button>
-      </Card.Actions>
-    </Card>
-  );
+        </Card.Content>
+      </Card>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -76,7 +86,6 @@ const CoursesScreen = () => {
         />
         <Text style={styles.filterLabel}>Tahun Akademik</Text>
         <TextInput
-          label="Tahun Akademik"
           value={academicYear}
           onChangeText={setAcademicYear}
           style={styles.input}
@@ -85,12 +94,20 @@ const CoursesScreen = () => {
         />
       </View>
 
-      <FlatList
-        data={enrolledCourses}
-        renderItem={renderCourseItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
-      />
+      {error && (
+        <Text style={styles.errorText}>{error}</Text>
+      )}
+
+      {loading ? (
+        <Text style={styles.loadingText}>Loading courses...</Text>
+      ) : (
+        <FlatList
+          data={courses}
+          renderItem={renderCourseItem}
+          keyExtractor={(item) => `${item.id}-${item.class_id}`}
+          contentContainerStyle={styles.list}
+        />
+      )}
     </View>
   );
 };
@@ -118,6 +135,15 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 16,
   },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  loadingText: {
+    textAlign: 'center',
+    marginTop: 20,
+  },
   attendanceContainer: {
     marginTop: 8,
   },
@@ -131,7 +157,7 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#6200ee',
     borderRadius: 4,
-  },
+  }
 });
 
 export default CoursesScreen; 
