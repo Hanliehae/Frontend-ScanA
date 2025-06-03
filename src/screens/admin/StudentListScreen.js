@@ -32,7 +32,7 @@ const StudentListScreen = () => {
         throw new Error('No token found');
       }
       
-      const response = await api.get('/user', {
+      const response = await api.get('/user/', {
         headers: {
           Authorization: `Bearer ${token}`
         }

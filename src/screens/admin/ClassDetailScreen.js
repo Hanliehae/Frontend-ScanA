@@ -196,7 +196,7 @@ const StudentsTab = ({ classData, course }) => {
       }
 
       const response = await api.get(
-        `/class-students/by-class/${classData.id}`,
+        `/class-students/by-class/all/${classData.id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -222,7 +222,7 @@ const StudentsTab = ({ classData, course }) => {
         throw new Error("No token found");
       }
 
-      const response = await api.get("/user", {
+      const response = await api.get("/user/", {
         headers: { Authorization: `Bearer ${token}` },
       });
 

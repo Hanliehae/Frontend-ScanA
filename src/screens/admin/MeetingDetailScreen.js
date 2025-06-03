@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Card, Title, Paragraph, Button, Text, ActivityIndicator, DataTable, IconButton, Portal, Modal, TextInput } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, RefreshControl, Dimensions } from 'react-native';
+import { Card, Title, Paragraph, Text, ActivityIndicator } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { showMessage } from 'react-native-flash-message';
 import api from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const TABLE_PADDING = 16;
+const NIM_WIDTH = 100;
+const NAME_WIDTH = 150;
+const TIME_WIDTH = 100;
+const STATUS_WIDTH = 100;
+
 const MeetingDetailScreen = () => {
   const route = useRoute();
-  const navigation = useNavigation();
   const { meeting, class: classData, course, meetingIndex } = route.params;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [students, setStudents] = useState([]);
-  const [showScanModal, setShowScanModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [scanType, setScanType] = useState('check_in'); // 'check_in' or 'check_out'
 
   useEffect(() => {
     fetchStudents();
@@ -29,9 +32,10 @@ const MeetingDetailScreen = () => {
         throw new Error('No token found');
       }
 
-      const response = await api.get(`/class-students/by-class/${classData.id}`, {
+      const response = await api.get(`/class-students/by-class/${classData.id}?meeting_id=${meeting.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log(response.data)
       setStudents(response.data.students || []);
     } catch (err) {
       showMessage({
@@ -45,57 +49,6 @@ const MeetingDetailScreen = () => {
     }
   };
 
-  const handleScanResult = async (handData) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-      const response = await api.post(
-        '/attendance/scan',
-        {
-          meeting_id: meeting.id,
-          student_id: selectedStudent.id,
-          hand_data: handData,
-          type: scanType
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      showMessage({
-        message: 'Success',
-        description: 'Absensi berhasil direkam',
-        type: 'success',
-      });
-
-      setShowScanModal(false);
-      setSelectedStudent(null);
-      fetchStudents();
-    } catch (err) {
-      showMessage({
-        message: 'Error',
-        description: err.message || 'Gagal merekam absensi',
-        type: 'danger',
-      });
-    }
-  };
-
-  const handleScanPress = (student, type) => {
-    setSelectedStudent(student);
-    setScanType(type);
-    setShowScanModal(true);
-  };
-
-  const handleOpenCamera = () => {
-    setShowScanModal(false);
-    navigation.navigate('HandScan', {
-      student: selectedStudent,
-      type: scanType,
-      meetingId: meeting.id
-    });
-  };
-
   const onRefresh = () => {
     setRefreshing(true);
     fetchStudents();
@@ -103,11 +56,11 @@ const MeetingDetailScreen = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'present':
+      case 'Hadir':
         return 'green';
-      case 'late':
+      case 'Terlambat':
         return 'orange';
-      case 'absent':
+      case 'Belum Hadir':
         return 'red';
       default:
         return 'gray';
@@ -135,83 +88,55 @@ const MeetingDetailScreen = () => {
       </Card>
 
       <ScrollView
+        horizontal={true}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <DataTable>
-          <DataTable.Header>
-            <DataTable.Title>NIM</DataTable.Title>
-            <DataTable.Title>Nama</DataTable.Title>
-            <DataTable.Title>Jam Masuk</DataTable.Title>
-            <DataTable.Title>Jam Keluar</DataTable.Title>
-            <DataTable.Title>Status</DataTable.Title>
-          </DataTable.Header>
+        <View style={styles.tableContainer}>
+          {/* Table Header */}
+          <View style={styles.tableHeader}>
+            <View style={[styles.headerCell, { width: NIM_WIDTH }]}>
+              <Text style={styles.headerText}>NIM</Text>
+            </View>
+            <View style={[styles.headerCell, { width: NAME_WIDTH }]}>
+              <Text style={styles.headerText}>Nama</Text>
+            </View>
+            <View style={[styles.headerCell, { width: TIME_WIDTH }]}>
+              <Text style={styles.headerText}>Jam Masuk</Text>
+            </View>
+            <View style={[styles.headerCell, { width: TIME_WIDTH }]}>
+              <Text style={styles.headerText}>Jam Keluar</Text>
+            </View>
+            <View style={[styles.headerCell, { width: STATUS_WIDTH }]}>
+              <Text style={styles.headerText}>Status</Text>
+            </View>
+          </View>
 
+          {/* Table Body */}
           {students.map((student) => (
-            <DataTable.Row key={student.id}>
-              <DataTable.Cell>{student.nim}</DataTable.Cell>
-              <DataTable.Cell>{student.name}</DataTable.Cell>
-              <DataTable.Cell>
-                {student.check_in_time ? (
-                  student.check_in_time
-                ) : (
-                  <IconButton
-                    icon="camera"
-                    size={20}
-                    onPress={() => handleScanPress(student, 'check_in')}
-                  />
-                )}
-              </DataTable.Cell>
-              <DataTable.Cell>
-                {student.check_out_time ? (
-                  student.check_out_time
-                ) : (
-                  <IconButton
-                    icon="camera"
-                    size={20}
-                    onPress={() => handleScanPress(student, 'check_out')}
-                  />
-                )}
-              </DataTable.Cell>
-              <DataTable.Cell>
-                <Text style={{ color: getStatusColor(student.status) }}>
+            <View key={student.id} style={styles.tableRow}>
+              <View style={[styles.cell, { width: NIM_WIDTH }]}>
+                <Text style={styles.cellText}>{student.nim}</Text>
+              </View>
+              <View style={[styles.cell, { width: NAME_WIDTH }]}>
+                <Text style={styles.cellText} numberOfLines={1}>{student.name}</Text>
+              </View>
+              <View style={[styles.cell, { width: TIME_WIDTH }]}>
+                <Text style={styles.cellText}>{student.check_in_time || '-'}</Text>
+              </View>
+              <View style={[styles.cell, { width: TIME_WIDTH }]}>
+                <Text style={styles.cellText}>{student.check_out_time || '-'}</Text>
+              </View>
+              <View style={[styles.cell, { width: STATUS_WIDTH }]}>
+                <Text style={[styles.cellText, { color: getStatusColor(student.status) }]}>
                   {student.status}
                 </Text>
-              </DataTable.Cell>
-            </DataTable.Row>
+              </View>
+            </View>
           ))}
-        </DataTable>
+        </View>
       </ScrollView>
-
-      <Portal>
-        <Modal
-          visible={showScanModal}
-          onDismiss={() => setShowScanModal(false)}
-          contentContainerStyle={styles.modalContainer}
-        >
-          <Text style={styles.modalTitle}>
-            Scan Tangan {selectedStudent?.name}
-          </Text>
-          <Text>
-            {scanType === 'check_in' ? 'Jam Masuk' : 'Jam Keluar'}
-          </Text>
-          <Button
-            mode="contained"
-            onPress={handleOpenCamera}
-            style={styles.scanButton}
-          >
-            Buka Kamera
-          </Button>
-          <Button
-            mode="outlined"
-            onPress={() => setShowScanModal(false)}
-            style={styles.cancelButton}
-          >
-            Batal
-          </Button>
-        </Modal>
-      </Portal>
     </View>
   );
 };
@@ -230,23 +155,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalContainer: {
+  tableContainer: {
+    margin: TABLE_PADDING,
     backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
     borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 2,
+    minWidth: SCREEN_WIDTH - (TABLE_PADDING * 2),
   },
-  modalTitle: {
-    fontSize: 20,
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerCell: {
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cell: {
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerText: {
     fontWeight: 'bold',
-    marginBottom: 16,
+    fontSize: 14,
+    textAlign: 'center',
   },
-  
-  scanButton: {
-    marginTop: 16,
-  },
-  cancelButton: {
-    marginTop: 8,
+  cellText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 

@@ -203,6 +203,9 @@ const DashboardScreen = () => {
                     <Paragraph style={styles.meetingDetail}>
                       Status: {status}
                     </Paragraph>
+                    <Paragraph style={styles.attendanceInfo}>
+                      Kehadiran: {meeting.attendance_count || 0} / {meeting.total_students || 0} siswa
+                    </Paragraph>
                     {!canScanIn && canScanOut && (
                       <Paragraph style={styles.scanMessage}>
                         Hanya tersedia scan keluar
@@ -400,6 +403,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1976D2',
     textAlign: 'center',
+  },
+  attendanceInfo: {
+    fontSize: 14,
+    color: '#2196F3',
+    fontWeight: '500',
+    marginTop: 4,
   },
 });
 
