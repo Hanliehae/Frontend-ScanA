@@ -8,14 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MeetingDetailScreen = () => {
   const route = useRoute();
-  const navigation = useNavigation();
   const { meeting, class: classData, course, meetingIndex } = route.params;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [students, setStudents] = useState([]);
-  const [showScanModal, setShowScanModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [scanType, setScanType] = useState('check_in'); // 'check_in' or 'check_out'
 
   useEffect(() => {
     fetchStudents();
@@ -29,7 +25,7 @@ const MeetingDetailScreen = () => {
         throw new Error('No token found');
       }
 
-      const response = await api.get(`/class-students/by-class/${classData.id}`, {
+      const response = await api.get(`/class-students/by-class/${classData.id}?meeting_id=${meeting.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log(response.data)
@@ -46,57 +42,6 @@ const MeetingDetailScreen = () => {
     }
   };
 
-  const handleScanResult = async (handData) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-      const response = await api.post(
-        '/attendance/scan',
-        {
-          meeting_id: meeting.id,
-          student_id: selectedStudent.id,
-          hand_data: handData,
-          type: scanType
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      showMessage({
-        message: 'Success',
-        description: 'Absensi berhasil direkam',
-        type: 'success',
-      });
-
-      setShowScanModal(false);
-      setSelectedStudent(null);
-      fetchStudents();
-    } catch (err) {
-      showMessage({
-        message: 'Error',
-        description: err.message || 'Gagal merekam absensi',
-        type: 'danger',
-      });
-    }
-  };
-
-  const handleScanPress = (student, type) => {
-    setSelectedStudent(student);
-    setScanType(type);
-    setShowScanModal(true);
-  };
-
-  const handleOpenCamera = () => {
-    setShowScanModal(false);
-    navigation.navigate('HandScan', {
-      student: selectedStudent,
-      type: scanType,
-      meetingId: meeting.id
-    });
-  };
-
   const onRefresh = () => {
     setRefreshing(true);
     fetchStudents();
@@ -104,11 +49,11 @@ const MeetingDetailScreen = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'present':
+      case 'Hadir':
         return 'green';
-      case 'late':
+      case 'Terlambat':
         return 'orange';
-      case 'absent':
+      case 'Belum Hadir':
         return 'red';
       default:
         return 'gray';
@@ -157,22 +102,14 @@ const MeetingDetailScreen = () => {
                 {student.check_in_time ? (
                   student.check_in_time
                 ) : (
-                  <IconButton
-                    icon="camera"
-                    size={20}
-                    onPress={() => handleScanPress(student, 'check_in')}
-                  />
+                  '-'
                 )}
               </DataTable.Cell>
               <DataTable.Cell>
                 {student.check_out_time ? (
                   student.check_out_time
                 ) : (
-                  <IconButton
-                    icon="camera"
-                    size={20}
-                    onPress={() => handleScanPress(student, 'check_out')}
-                  />
+                  '-'
                 )}
               </DataTable.Cell>
               <DataTable.Cell>
@@ -184,35 +121,6 @@ const MeetingDetailScreen = () => {
           ))}
         </DataTable>
       </ScrollView>
-
-      <Portal>
-        <Modal
-          visible={showScanModal}
-          onDismiss={() => setShowScanModal(false)}
-          contentContainerStyle={styles.modalContainer}
-        >
-          <Text style={styles.modalTitle}>
-            Scan Tangan {selectedStudent?.name}
-          </Text>
-          <Text>
-            {scanType === 'check_in' ? 'Jam Masuk' : 'Jam Keluar'}
-          </Text>
-          <Button
-            mode="contained"
-            onPress={handleOpenCamera}
-            style={styles.scanButton}
-          >
-            Buka Kamera
-          </Button>
-          <Button
-            mode="outlined"
-            onPress={() => setShowScanModal(false)}
-            style={styles.cancelButton}
-          >
-            Batal
-          </Button>
-        </Modal>
-      </Portal>
     </View>
   );
 };
@@ -241,13 +149,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 16,
-  },
-  
-  scanButton: {
-    marginTop: 16,
-  },
-  cancelButton: {
-    marginTop: 8,
   },
 });
 
