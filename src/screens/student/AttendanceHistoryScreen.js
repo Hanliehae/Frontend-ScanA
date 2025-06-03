@@ -50,7 +50,7 @@ const HistoryScreen = () => {
       const student_id = profile.data.id;
 
 
-      const response = await api.get(`/history?student_id=${student_id}`, {
+      const response = await api.get(`/history/?student_id=${student_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

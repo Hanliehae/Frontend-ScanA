@@ -50,7 +50,7 @@ const HistoryScreen = () => {
         throw new Error('No token found');
       }
 
-      const response = await api.get('/admin/history', {
+      const response = await api.get('/admin/history/', {
         headers: { Authorization: `Bearer ${token}` }
       });
 

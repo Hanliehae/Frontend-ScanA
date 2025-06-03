@@ -55,7 +55,7 @@ const DashboardScreen = () => {
         api.get(`/courses/by-student/${student_id}`, { headers: { Authorization: `Bearer ${token}` } }),
         api.get(`/classes/by-student/${student_id}`, { headers: { Authorization: `Bearer ${token}` } }),
         api.get(`/meetings/by-student/${student_id}`, { headers: { Authorization: `Bearer ${token}` } }),
-        api.get(`/history?student_id=${student_id}`, { headers: { Authorization: `Bearer ${token}` } })
+        api.get(`/history/?student_id=${student_id}`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       // Calculate statistics

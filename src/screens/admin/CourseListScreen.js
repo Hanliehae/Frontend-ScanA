@@ -26,7 +26,7 @@ const CourseListScreen = () => {
         throw new Error('No token found');
       }
       
-      const response = await api.get('/courses', {
+      const response = await api.get('/courses/', {
         headers: {
           Authorization: `Bearer ${token}`
         }
