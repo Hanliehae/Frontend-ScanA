@@ -196,7 +196,7 @@ const StudentsTab = ({ classData, course }) => {
       }
 
       const response = await api.get(
-        `/class-students/by-class/${classData.id}`,
+        `/class-students/by-class/all/${classData.id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
