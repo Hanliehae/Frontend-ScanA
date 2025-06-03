@@ -32,6 +32,7 @@ const MeetingDetailScreen = () => {
       const response = await api.get(`/class-students/by-class/${classData.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log(response.data)
       setStudents(response.data.students || []);
     } catch (err) {
       showMessage({
