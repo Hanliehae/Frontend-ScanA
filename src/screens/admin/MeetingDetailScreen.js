@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Card, Title, Paragraph, Button, Text, ActivityIndicator, DataTable, IconButton, Portal, Modal, TextInput } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, RefreshControl, Dimensions } from 'react-native';
+import { Card, Title, Paragraph, Text, ActivityIndicator } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { showMessage } from 'react-native-flash-message';
 import api from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const TABLE_PADDING = 16;
+const NIM_WIDTH = 100;
+const NAME_WIDTH = 150;
+const TIME_WIDTH = 100;
+const STATUS_WIDTH = 100;
 
 const MeetingDetailScreen = () => {
   const route = useRoute();
@@ -81,45 +88,54 @@ const MeetingDetailScreen = () => {
       </Card>
 
       <ScrollView
+        horizontal={true}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <DataTable>
-          <DataTable.Header>
-            <DataTable.Title>NIM</DataTable.Title>
-            <DataTable.Title>Nama</DataTable.Title>
-            <DataTable.Title>Jam Masuk</DataTable.Title>
-            <DataTable.Title>Jam Keluar</DataTable.Title>
-            <DataTable.Title>Status</DataTable.Title>
-          </DataTable.Header>
+        <View style={styles.tableContainer}>
+          {/* Table Header */}
+          <View style={styles.tableHeader}>
+            <View style={[styles.headerCell, { width: NIM_WIDTH }]}>
+              <Text style={styles.headerText}>NIM</Text>
+            </View>
+            <View style={[styles.headerCell, { width: NAME_WIDTH }]}>
+              <Text style={styles.headerText}>Nama</Text>
+            </View>
+            <View style={[styles.headerCell, { width: TIME_WIDTH }]}>
+              <Text style={styles.headerText}>Jam Masuk</Text>
+            </View>
+            <View style={[styles.headerCell, { width: TIME_WIDTH }]}>
+              <Text style={styles.headerText}>Jam Keluar</Text>
+            </View>
+            <View style={[styles.headerCell, { width: STATUS_WIDTH }]}>
+              <Text style={styles.headerText}>Status</Text>
+            </View>
+          </View>
 
+          {/* Table Body */}
           {students.map((student) => (
-            <DataTable.Row key={student.id}>
-              <DataTable.Cell>{student.nim}</DataTable.Cell>
-              <DataTable.Cell>{student.name}</DataTable.Cell>
-              <DataTable.Cell>
-                {student.check_in_time ? (
-                  student.check_in_time
-                ) : (
-                  '-'
-                )}
-              </DataTable.Cell>
-              <DataTable.Cell>
-                {student.check_out_time ? (
-                  student.check_out_time
-                ) : (
-                  '-'
-                )}
-              </DataTable.Cell>
-              <DataTable.Cell>
-                <Text style={{ color: getStatusColor(student.status) }}>
+            <View key={student.id} style={styles.tableRow}>
+              <View style={[styles.cell, { width: NIM_WIDTH }]}>
+                <Text style={styles.cellText}>{student.nim}</Text>
+              </View>
+              <View style={[styles.cell, { width: NAME_WIDTH }]}>
+                <Text style={styles.cellText} numberOfLines={1}>{student.name}</Text>
+              </View>
+              <View style={[styles.cell, { width: TIME_WIDTH }]}>
+                <Text style={styles.cellText}>{student.check_in_time || '-'}</Text>
+              </View>
+              <View style={[styles.cell, { width: TIME_WIDTH }]}>
+                <Text style={styles.cellText}>{student.check_out_time || '-'}</Text>
+              </View>
+              <View style={[styles.cell, { width: STATUS_WIDTH }]}>
+                <Text style={[styles.cellText, { color: getStatusColor(student.status) }]}>
                   {student.status}
                 </Text>
-              </DataTable.Cell>
-            </DataTable.Row>
+              </View>
+            </View>
           ))}
-        </DataTable>
+        </View>
       </ScrollView>
     </View>
   );
@@ -139,16 +155,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalContainer: {
+  tableContainer: {
+    margin: TABLE_PADDING,
     backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
     borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 2,
+    minWidth: SCREEN_WIDTH - (TABLE_PADDING * 2),
   },
-  modalTitle: {
-    fontSize: 20,
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  headerCell: {
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cell: {
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerText: {
     fontWeight: 'bold',
-    marginBottom: 16,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  cellText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 
