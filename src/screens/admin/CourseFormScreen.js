@@ -40,6 +40,7 @@ const CourseFormScreen = () => {
     if (!formData.academic_year) newErrors.academic_year = 'Tahun akademik harus diisi';
     if (!formData.semester) newErrors.semester = 'Semester harus dipilih';
 
+   
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -86,6 +87,7 @@ const CourseFormScreen = () => {
       }
       navigation.goBack();
     } catch (err) {
+      console.error('Error submitting course:', err);
       showMessage({
         message: 'Error',
         description: err.message || 'Terjadi kesalahan saat menyimpan data',
